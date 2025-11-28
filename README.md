@@ -44,6 +44,8 @@ The server provides the following tools:
 
 ## Running the Server
 
+### Local Installation
+
 Execute the server script:
 
 ```bash
@@ -59,6 +61,201 @@ mcp install server.py
 Or use the new agent mode in VS Code:
 
 [Agent mode: available to all users and supports MCP](https://code.visualstudio.com/blogs/2025/04/07/agentMode)
+
+### Docker
+
+For Docker installation and usage, see [DOCKER.md](DOCKER.md) for detailed build information and instructions.
+
+## Platform Configuration
+
+This MCP server can be integrated with various AI coding platforms. Below are configuration instructions for popular platforms:
+
+### Claude Desktop
+
+Add the following to your Claude Desktop configuration file (`claude_desktop_config.json`):
+
+**macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`  
+**Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
+
+```json
+{
+  "mcpServers": {
+    "typst": {
+      "command": "docker",
+      "args": [
+        "run", "--rm", "-i",
+        "ghcr.io/johannesbrandenburger/typst-mcp:latest"
+      ]
+    }
+  }
+}
+```
+
+Or for local installation:
+
+```json
+{
+  "mcpServers": {
+    "typst": {
+      "command": "docker",
+      "args": [
+        "run", "--rm", "-i",
+        "ghcr.io/johannesbrandenburger/typst-mcp:latest"
+      ]
+    }
+  }
+}
+```
+
+### Cursor
+
+Create `.cursor/mcp.json` in your project root for project-specific configuration:
+
+```json
+{
+  "mcpServers": {
+    "typst": {
+      "command": "docker",
+      "args": [
+        "run", "--rm", "-i",
+        "ghcr.io/johannesbrandenburger/typst-mcp:latest"
+      ]
+    }
+  }
+}
+```
+
+Or create `~/.cursor/mcp.json` for global configuration. For local installation:
+
+```json
+{
+  "mcpServers": {
+    "typst": {
+      "command": "python",
+      "args": ["/path/to/typst-mcp/server.py"]
+    }
+  }
+}
+```
+
+### Roo Code
+
+Create `.roo/mcp.json` in your project root for project-specific configuration:
+
+```json
+{
+  "mcpServers": {
+    "typst": {
+      "command": "docker",
+      "args": [
+        "run", "--rm", "-i",
+        "ghcr.io/johannesbrandenburger/typst-mcp:latest"
+      ]
+    }
+  }
+}
+```
+
+Or edit global settings via Roo Code MCP settings view. For local installation:
+
+```json
+{
+  "mcpServers": {
+    "typst": {
+      "command": "python",
+      "args": ["/path/to/typst-mcp/server.py"]
+    }
+  }
+}
+```
+
+### OpenCode
+
+Create or edit the `opencode.json` file in your project root:
+
+```json
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "typst": {
+      "type": "local",
+      "command": ["docker", "run", "--rm", "-i", 
+        "ghcr.io/johannesbrandenburger/typst-mcp:latest"
+      ],
+      "enabled": true
+    }
+  }
+}
+```
+
+For local installation:
+
+```json
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "typst": {
+      "type": "local",
+      "command": ["python", "/path/to/typst-mcp/server.py"],
+      "enabled": true
+    }
+  }
+}
+```
+
+### Claude Code
+
+Configure MCP servers in your Claude Code settings file (`~/.claude/settings.json`):
+
+```json
+{
+  "mcpServers": {
+    "typst": {
+      "command": "docker",
+      "args": [
+        "run", "--rm", "-i",
+        "ghcr.io/johannesbrandenburger/typst-mcp:latest"
+      ]
+    }
+  }
+}
+```
+
+Or for local installation:
+
+```json
+{
+  "mcpServers": {
+    "typst": {
+      "command": "python",
+      "args": ["/path/to/typst-mcp/server.py"]
+    }
+  }
+}
+```
+
+### VS Code with Agent Mode
+
+VS Code's Agent Mode has native MCP support (no extension required):
+
+1. Enable Agent Mode in VS Code settings (`chat.agent.enabled`)
+2. Create `.vscode/mcp.json` in your workspace:
+
+```json
+{
+  "servers": {
+    "typst": {
+      "command": "docker",
+      "args": [
+        "run", "--rm", "-i",
+        "ghcr.io/johannesbrandenburger/typst-mcp:latest"
+      ]
+    }
+  }
+}
+```
+
+For global configuration, add to your user profile via **MCP: Open User Configuration** command.
 
 ## JSON Schema of the Typst Documentation
 

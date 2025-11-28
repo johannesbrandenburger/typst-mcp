@@ -1,0 +1,31 @@
+# Base image with pre-compiled Typst documentation
+# This image only needs to be rebuilt when Typst documentation changes
+FROM rustlang/rust:nightly-slim
+
+# Install system dependencies for typst-docs
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    # Install pkg-config for Rust dependencies
+    pkg-config \
+    # Install libssl-dev for Rust dependencies
+    libssl-dev \
+    # Install ca-certificates for HTTPS downloads
+    ca-certificates \
+    # Install git for cloning typst repository
+    git \
+    # Clean up apt caches to reduce image size
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Clone typst repository with all optimizations and generate docs
+RUN git clone --depth 1 --single-branch --no-tags https://github.com/typst/typst.git /tmp/typst && \
+    cd /tmp/typst && \
+    cargo run --package typst-docs -- --assets-dir /usr/local/share/typst-docs --out-file /usr/local/share/typst-docs/main.json && \
+    rm -rf /tmp/typst
+
+# Set labels for the base image
+LABEL org.opencontainers.image.title="Typst MCP Base"
+LABEL org.opencontainers.image.description="Base image with pre-compiled Typst documentation"
+LABEL org.opencontainers.image.source="https://github.com/bapttf/typst-mcp"
+
+# Default command to show docs are ready
+CMD ["ls", "-la", "/usr/local/share/typst-docs/"]

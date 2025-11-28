@@ -1,0 +1,78 @@
+# Runtime image using pre-built base with Typst documentation
+# Build the base image first: docker build -f Dockerfile.base -t typst-mcp-base .
+ARG BASE_IMAGE=ghcr.io/bapttf/typst-mcp-base:latest
+FROM ${BASE_IMAGE} AS base
+
+# Python builder stage
+FROM python:3.12-slim AS python-builder
+
+# Set environment variables
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    UV_CACHE_DIR=/tmp/uv-cache
+
+# Install uv for Python package management
+RUN pip install --no-cache-dir uv
+
+# Set working directory
+WORKDIR /app
+
+# Copy dependency files
+COPY pyproject.toml uv.lock ./
+
+# Install Python dependencies
+RUN uv sync --frozen --no-dev
+
+# Final runtime image
+FROM python:3.12-slim AS runtime
+
+# Set environment variables
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    UV_CACHE_DIR=/tmp/uv-cache
+
+# Install only runtime dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    # Install pandoc for LaTeX to Typst conversion
+    pandoc \
+    # Install ca-certificates for HTTPS downloads
+    ca-certificates \
+    # Install curl for downloading typst binary
+    curl \
+    # Install xz-utils for extracting typst binary
+    xz-utils \
+    # Clean up apt caches to reduce image size
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install uv for Python package management
+RUN pip install --no-cache-dir uv
+
+# Download and install pre-built typst binary
+RUN TYPST_VERSION=$(curl -s https://api.github.com/repos/typst/typst/releases/latest | grep -o '"tag_name": "[^"]*' | cut -d'"' -f4) && \
+    curl -L "https://github.com/typst/typst/releases/download/${TYPST_VERSION}/typst-x86_64-unknown-linux-musl.tar.xz" | tar -xJ && \
+    mv typst-x86_64-unknown-linux-musl/typst /usr/local/bin/typst && \
+    rm -rf typst-x86_64-unknown-linux-musl
+
+# Set working directory
+WORKDIR /app
+
+# Copy Python dependencies from python-builder stage
+COPY --from=python-builder /app/.venv /app/.venv
+
+# Copy pre-compiled Typst documentation from base image
+COPY --from=base /usr/local/share/typst-docs /app/typst-docs
+
+# Copy application code
+COPY server.py ./
+COPY typst-docs-json-schema.json ./
+
+# Create non-root user for security
+RUN useradd --create-home --shell /bin/bash typst && \
+    chown -R typst:typst /app && \
+    mkdir -p /tmp/uv-cache && \
+    chown -R typst:typst /tmp/uv-cache
+USER typst
+
+# Set entrypoint
+ENTRYPOINT ["uv", "run", "python", "server.py"]
