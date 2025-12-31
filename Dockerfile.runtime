@@ -48,11 +48,17 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Install uv for Python package management
 RUN pip install --no-cache-dir uv
 
-# Download and install pre-built typst binary
+# Download and install pre-built typst binary (architecture-aware)
+ARG TARGETARCH
 RUN TYPST_VERSION=$(curl -s https://api.github.com/repos/typst/typst/releases/latest | grep -o '"tag_name": "[^"]*' | cut -d'"' -f4) && \
-    curl -L "https://github.com/typst/typst/releases/download/${TYPST_VERSION}/typst-x86_64-unknown-linux-musl.tar.xz" | tar -xJ && \
-    mv typst-x86_64-unknown-linux-musl/typst /usr/local/bin/typst && \
-    rm -rf typst-x86_64-unknown-linux-musl
+    case "${TARGETARCH}" in \
+        amd64) TYPST_ARCH="x86_64" ;; \
+        arm64) TYPST_ARCH="aarch64" ;; \
+        *) echo "Unsupported architecture: ${TARGETARCH}" && exit 1 ;; \
+    esac && \
+    curl -L "https://github.com/typst/typst/releases/download/${TYPST_VERSION}/typst-${TYPST_ARCH}-unknown-linux-musl.tar.xz" | tar -xJ && \
+    mv typst-${TYPST_ARCH}-unknown-linux-musl/typst /usr/local/bin/typst && \
+    rm -rf typst-${TYPST_ARCH}-unknown-linux-musl
 
 # Set working directory
 WORKDIR /app
