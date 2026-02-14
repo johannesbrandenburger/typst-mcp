@@ -40,7 +40,7 @@ def list_docs_chapters() -> str:
     Lists all chapters in the typst docs.
     The LLM should use this in the beginning to get the list of chapters and then decide which chapter to read.
     """
-    print("mcp.resource('docs://chapters') called")
+    print("mcp.resource('docs://chapters') called", file=sys.stderr)
     chapters = []
     for chapter in typst_docs:
         chapters.append({
@@ -61,7 +61,7 @@ def get_docs_chapter(route: str) -> str:
     If a chapter has children and its content length is over 1000, this will only return the child routes
     instead of the full content to avoid overwhelming responses.
     """
-    print(f"mcp.resource('docs://chapters/{route}') called")
+    print(f"mcp.resource('docs://chapters/{route}') called", file=sys.stderr)
 
     # the rout could also be in the form of "____reference____layout____colbreak" -> "/reference/layout/colbreak"
     # replace all underscores with slashes
