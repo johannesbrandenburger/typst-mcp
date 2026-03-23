@@ -2,6 +2,7 @@ from mcp.server.fastmcp import FastMCP, Image
 import json
 import subprocess
 import os
+import sys
 import tempfile
 from PIL import Image as PILImage
 import io
