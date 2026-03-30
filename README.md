@@ -42,6 +42,10 @@ The server provides the following tools:
   
 - Install Typst
 
+## Hosted deployment
+
+A hosted deployment is available on [Fronteir AI](https://fronteir.ai/mcp/johannesbrandenburger-typst-mcp).
+
 ## Running the Server
 
 ### Local Installation
